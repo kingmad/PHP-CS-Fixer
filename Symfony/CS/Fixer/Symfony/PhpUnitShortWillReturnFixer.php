@@ -22,9 +22,20 @@ use Symfony\CS\Tokenizer\Tokens;
 class PhpUnitShortWillReturnFixer extends AbstractFixer
 {
     const WILL_RETURN_CONTENT = array(
-        T_CONSTANT_ENCAPSED_STRING,
-        T_VARIABLE,
-        T_CONST,
+        array(
+            array(T_VARIABLE),
+        ),
+        array(
+            array(T_CONSTANT_ENCAPSED_STRING),
+        ),
+        array(
+            array(T_CONST),
+        ),
+        array(
+            array(T_STRING),
+            array(T_DOUBLE_COLON),
+            array(T_STRING),
+        ),
     );
 
     /**
@@ -60,17 +71,21 @@ class PhpUnitShortWillReturnFixer extends AbstractFixer
         $sequences = array();
 
         foreach (self::WILL_RETURN_CONTENT as $item) {
-            $sequences[] = array(
-                array(T_OBJECT_OPERATOR, '->'),
-                array(T_STRING, 'will'),
-                '(',
-                array(T_VARIABLE, '$this'),
-                array(T_OBJECT_OPERATOR, '->'),
-                array(T_STRING, 'returnValue'),
-                '(',
-                array($item),
-                ')',
-                ')',
+            $sequences[] = array_merge(
+                array(
+                    array(T_OBJECT_OPERATOR, '->'),
+                    array(T_STRING, 'will'),
+                    '(',
+                    array(T_VARIABLE, '$this'),
+                    array(T_OBJECT_OPERATOR, '->'),
+                    array(T_STRING, 'returnValue'),
+                    '(',
+                ),
+                $item,
+                array(
+                    ')',
+                    ')',
+                )
             );
         }
 
@@ -95,17 +110,18 @@ class PhpUnitShortWillReturnFixer extends AbstractFixer
      * @param Tokens $tokens
      * @param array  $occurrence
      *
-     * @return
+     * @return int
      */
     public function fixOccurrence(Tokens $tokens, array $occurrence)
     {
         $sequenceIndexes = array_keys($occurrence);
         $tokens->clearRange($sequenceIndexes[2], $sequenceIndexes[5]);
-        $tokens->overrideAt($sequenceIndexes[9], '');
         /** @var Token $token */
         $token = $tokens[$sequenceIndexes[1]];
         $token->setContent('willReturn');
+        $lastIndex = end($sequenceIndexes);
+        $tokens->overrideAt($lastIndex, '');
 
-        return $sequenceIndexes[9];
+        return $lastIndex;
     }
 }

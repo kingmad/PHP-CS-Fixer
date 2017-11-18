@@ -20,9 +20,12 @@ use Symfony\CS\Tests\Fixer\AbstractFixerTestBase;
 class PhpUnitShortWillReturnFixerTest extends AbstractFixerTestBase
 {
     /**
+     * @param string        $expected
+     * @param string | null $input
+     *
      * @dataProvider provideFixCases
      */
-    public function testFixA($expected, $input = null)
+    public function testFix($expected, $input = null)
     {
         $this->makeTest($expected, $input);
     }
@@ -35,47 +38,53 @@ class PhpUnitShortWillReturnFixerTest extends AbstractFixerTestBase
         return array(
             array(
                 '<?php
-                $updater = $this->getUpdaterMock();
-        $updater->method(\'getUpdatedTranslations\')
-            ->willReturn($existingTransUnits);
+                $testMock = $this->getTestMock();
+        $testMock->method(\'testMethod\')
+            ->willReturn($returnValue);
 ',
                 '<?php
-                $updater = $this->getUpdaterMock();
-        $updater->method(\'getUpdatedTranslations\')
-            ->will($this->returnValue($existingTransUnits));
+                $testMock = $this->getTestMock();
+        $testMock->method(\'testMethod\')
+            ->will($this->returnValue($returnValue));
 ',
             ),
             array(
                 '<?php
 
-                $xmlFinderMock->expects($this->at(0))
+                $finderMock->expects($this->at(0))
             ->method(\'getUnits\')
             ->with(\'fileName1\')
             ->willReturn(\'Unit1\');
-        $xmlFinderMock->expects($this->at(1))
+        $finderMock->expects($this->at(1))
             ->method(\'getUnits\')
             ->with(\'fileName2\')
             ->willReturn(\'Unit2\');
-        $xmlFinderMock->expects($this->at(2))
+        $finderMock->expects($this->at(2))
             ->method(\'getUnits\')
             ->with(\'fileName3\')
             ->willReturn(\'Unit3\');
                 ',
                 '<?php
 
-                $xmlFinderMock->expects($this->at(0))
+                $finderMock->expects($this->at(0))
             ->method(\'getUnits\')
             ->with(\'fileName1\')
             ->will($this->returnValue(\'Unit1\'));
-        $xmlFinderMock->expects($this->at(1))
+        $finderMock->expects($this->at(1))
             ->method(\'getUnits\')
             ->with(\'fileName2\')
             ->will($this->returnValue(\'Unit2\'));
-        $xmlFinderMock->expects($this->at(2))
+        $finderMock->expects($this->at(2))
             ->method(\'getUnits\')
             ->with(\'fileName3\')
             ->will($this->returnValue(\'Unit3\'));
                 ',
+            ),
+            array(
+                '<?php
+                $testMock->method("test_method")->willReturn(self::DEFAULT_VALUE);',
+                '<?php
+                $testMock->method("test_method")->will($this->returnValue(self::DEFAULT_VALUE));',
             ),
         );
     }
